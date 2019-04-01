@@ -5,7 +5,7 @@ Users will be able to log in, post photos, view (some of) the photos posted by o
 In part 1 of the project, you will design an ER diagram for the database. 
 In part 2, you will convert my E-R diagram, which I will post after Part 1 is due, to a relational schema and write table definitions in SQL. 
 Part 3 is a milestone to guarantee that you’re making progress: using my table definitions, which I will post after Part 2 is due, you will write and test some of your SQL queries and some application source code. Part 4 will be the most work: you will revise your queries from part 3, if necessary, and write and test the rest of the application code for the system. A detailed specification will be provided shortly after part 2 is due. Near the end of the semester you will schedule a demo/test session in which your Finstagram application will be tested. 
-**PART 1:** 
+## PART 1 
 Finstagram allows users to have followers with whom they can share photos and also close friends who have special permissions to view certain posts. For example, if Brittany has a private Finstagram account and Kevin is following Brittany, he will be able to view some of her posts. However, Brittany can post a photo that only certain of her `close friends` can view. If Brittany did not add Kevin to this group of close friends, then Kevin will not be able to view that photo. People who have access to view a photo will also be able to like and comment on that photo. In addition, the person posting the photo can write a caption and tag the photo with people that may be in the photo. 
 For Part 1, you will draw an ER diagram modeling the data needed for the system. It should include entity sets (possibly including one or more weak entity sets) representing Person, CloseFriendGroup, and Photo as well as several relationship sets. 
 Details of the data model: 
@@ -20,7 +20,7 @@ What You Should Do
 Design an ER diagram for Finstagram. When you do this, think about: which information should be represented as attributes, which as entity sets or relationship sets? Are any of the entity sets weak entity sets? If so, what is the identifying strong entity set? What is the primary key (or discriminator) of each entity set? What additional attributes are needed to keep track of data about the status of requests to follow someone, tag someone in a photo, etc? What are the cardinality constraints on the relationship sets? Draw the ER diagram neatly. You may draw it by hand or use a drawing tool. 
 Your diagram should fit neatly onto one page. Most, if not all, of the relevant entity sets and relationship sets are highlighted in bold and most of the attributes are in italics in the project description, above. 
 Note: At this point you should NOT worry about enforcing rules about who can do what with which photos, etc. For example, you do not need to assure in the ER diagram that a Person can only comment on photos that are shared with a CloseFriendGroup that the person belongs to; we’ll add that later with additional constraints on the relational schema in part 2 and/or with queries and /or application code in parts 3 and 4. 
-**PART 2**
+## PART 2
 Use the ER diagram posted (my solution to Part 1, with the changes in cardinality constraints that are noted in red above): 
 1. Make one small change to the ER: Instead of including comment and timestamp as 
 attributes of Like, create a different relationship set allowing People to make comments about Photos; include the comment text and a time stamp as attributes. 
@@ -34,15 +34,17 @@ What / How to hand in:
 1. Via NYU Classes: A plain text file that includes all of your CREATE TABLE statements 
 (3) and the query (4), AND 2. Via GradeScope: A pdf file that includes a. The schema diagrame (2) b. The CREATE TABLE statement (3) c. The query (4) 
 NOTE: Mark which is which part is where when you hand it in via GradeScope. Each file should have the names of all team members. Use the Group Handin option on GradeScope. On NYU Classes only one team member should hand the work in. 
-**PART 3 and 4**
+## PART 3 and 4
 In parts 3 and 4 of the project, you will use the table definitions I will post (solution to part 2) along with any additional table definitions you need, to implement application code for Finstagram as a web-based application. You may use Python, PHP, Java, node.js, Go, or C#. If 
 you’d like to use some other language, check with me by 3/15. You must use prepared statements if your application language supports them. 
 Part 3 (Due 4/5/19) is a milestone in which you must show that you’ve written and tested code for at least n of the “use cases” shown below (other than the login, which we’ll provide for you), where n is the number of people in your group. Each person on your team should write the code for one of these use cases and the whole team should review it and understand it. 
 Part 4 is the completed project, due on 4/24 (small penalties for a few days after that; increasing penalties thereafter). You will hand in your code, a short write up (details coming soon), proposals for any extra features that are not on the list below (. You will also schedule a demo session in which one of the TAs will run through a series of tests with you. 
 Your Finstagram implementation should allow a user to log in; view photos that she has access to, i.e. photos that were were posted by people she’s following or that are shared with CloseFriendGroups to which she belongs; post photos and designate who can view them; request to follow others; accept or decline requests to follow her; propose to tag others in photos that she has access to; accept or decline proposed tags. In addition, you will propose and add some other features, as described below. Assume each user has already registered and created a password, which is stored as an SHA-2 hash. (We will provide Python/Flask code to manage user registration and login). 
 A photo is visible to a user U if either:
+
 ● U has been accepted as a follower by the owner of the photo, or 
 ● The photo is shared with a CloseFriendGroup to which U belongs 
+
 Remember that a CloseFriendGroup is identified its groupName along with the groupOwner (the username of the owner of the group). We will assume that in the initial database, the owner of each CloseFriendGroup is a member of that CloseFriendGroup. When modifying the database, Finstagram should maintain that, by adding the user as a member of each CloseFriendGroup she creates. 
 Finstagram should support the following use cases: 
 Login: The user enters her username and password. Finstagram will add “salt” to the password, hash it, and check whether the hash of the password matches the stored password for that e-mail. If so, it initiates a session, storing the username and any other relevant data in session variables, then goes to the home page (or provides some mechanism for the user to select her next action.) If the password does not match the stored password for that username (or no such user exists) Finstagram informs the user that the the login failed and does not initiate the session. We will supply Python/Flask 
