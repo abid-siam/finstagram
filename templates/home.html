@@ -1,0 +1,27 @@
+<!-- ++++++++++++++++++++++++++++++++++++++++
+                FINSTAGRAM HOME PAGE
+     ++++++++++++++++++++++++++++++++++++++++ -->
+
+{% extends "layout.html" %} <!-- this is like an #include statement which brings copies the code from the specified file  -->
+
+{% block content %}
+<div class="container">
+  <div>
+      <h1> Welcome to Finstagram! </h1>
+        <p>
+          <b>Your Pictures! You Decide!</b> With Finstagram, you get to choose which friends get to view which pictures you post.
+        </p>
+        <div class="border-top pt-3">
+            <b>Sign up Today!</b>
+            <a class="ml-2" href="{{url_for('register')}}">Register Here</a>
+        </div>
+        <div class="border-top pt-3">
+            <b>Already have an account?</b>
+            <a class="ml-2" href="{{url_for('login')}}">Login Here</a>
+
+        </div>
+  </div>
+</div>
+
+
+{% endblock content %}
