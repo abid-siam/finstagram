@@ -4,9 +4,21 @@
 
 {% extends "layout.html" %} <!-- this is like an #include statement which brings copies the code from the specified file  -->
 {% block content %}
-<div class="jumbotron text-center">
-    <h1>Finstagram - Dashboard</h1>
-    <h2>Loggin as {{ username }}</h2>
-    <p>Manage Your Posts Here</p>
-</div>
+    <div class="content-section">
+        <div class="media">
+            <img class="rounded circle account-img" src="{{current_user.avatar}}">
+            <div class="media-body">
+                <h2 class="account-heading">{{ current_user.username }}</h2>
+                <p class="text-secondary">{{ current_user.bio }}</p>
+                <div>
+                    {% if current_user.isPrivate %}
+                        <p> This account is Private </p>
+                    {% else %}
+                        <p> This account is Public </p>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock content %}

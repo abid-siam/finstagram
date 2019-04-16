@@ -1,20 +1,23 @@
 from flask import Flask, render_template, request, session, url_for, flash, redirect
 import hashlib
-from forms import RegistrationForm, LoginForm
+from forms import RegistrationForm, LoginForm, ChangePassForm
 import pymysql.cursors
-
 '''
 Abid Siam
 CS-UY 410X
 Professor Frankl
-Updated: April 5, 2019
+Updated: April 15, 2019
+New features: update password and username, upload avatar, update bio
+
+****NEED TO CREATE A USER CLASS WHICH CONTAINS EVERYTHING THAT CAN BELONG TO A USER*****
+
 github.com/abid-siam/finstagram-project
 '''
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '71a924bd8cc5c7250a4fd7314f3d2faa'
 # session is a dictionary
-# sha256 encrypts strings to 64 bits
 
 # connect to the database
 conn = pymysql.connect(host='localhost',
@@ -25,7 +28,7 @@ conn = pymysql.connect(host='localhost',
                        cursorclass=pymysql.cursors.DictCursor)
 
 #==========================================================================
-# Encrypt the password field to a 64 but hexadecimal
+# Encrypt the password field to a 64 bit hexadecimal
 
 
 def encrypt(strToHash):
@@ -37,17 +40,26 @@ def encrypt(strToHash):
 
 def verify(strToVerify, compareTo):
     encoded = (hashlib.sha256(str.encode(strToVerify))).hexdigest()
-    print("Compare1: ", encoded, end='\n')
-    print("Compare2: ", compareTo, end='\n')
     return (encoded == compareTo)
 
+
 #===========================================================================
+class User():
+
+    def __init__(self, fName, lName, username, password, bio, avatar, isPrivate):
+        self.firstName = fName
+        self.lastName = lName
+        self.username = username
+        self.password = password
+        self.bio = bio
+        self.avatar = avatar
+        self.isPrivate = isPrivate
+        self.posts = []
 
 
 @app.route("/")
 @app.route("/home")
 def home():
-    print("In here\n")
     if 'logged_in' in session:
         return redirect(url_for('dashboard'))  # need to make the dashboard
 
@@ -60,7 +72,13 @@ def home():
 def dashboard():
     username = session['username']
     cursor = conn.cursor()
-    return render_template('dashboard.html', title='Dashboard', username=username)
+    query = 'SELECT * FROM Person WHERE username = %s'
+    cursor.execute(query, (username))
+    data = cursor.fetchone()
+    current_user = User(data["fname"], data["lname"], username,
+                        data["password"], data["bio"], data["avatar"], data["isPrivate"])
+
+    return render_template('dashboard.html', title='Dashboard', current_user=current_user)
 
 
 @app.route("/about")
@@ -87,7 +105,8 @@ def register():
             flash('The Username Is Already Taken! Try Another One', 'danger')
             cursor.close()
         else:  # the username is unique and does not exist in the database
-            ins = 'INSERT INTO Person(fname,lname,username,password) VALUES(%s,%s,%s,%s)'
+            # default the avatar to 'default.jpg', set the profile to public
+            ins = 'INSERT INTO Person(fname,lname,username,password,avatar,isPrivate) VALUES(%s,%s,%s,%s,"default.jpg",1)'
             cursor.execute(ins, (firstName, lastName, username, password_hashed))
             # save changes to database
             conn.commit()
@@ -95,7 +114,7 @@ def register():
             # notify the user of successful creation of account
             flash(f'Account created for {form.username.data}! You can now login', 'success')  # the second argument taken by the flash function indicates the type of result our message is
 
-            return redirect(url_for('login'))
+        return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
 
 
@@ -106,8 +125,6 @@ def login():
         # fetch data from the form
         username = form.username.data
         password_to_check = form.password.data
-        print("The username is: ", username, end='\n')
-        print("The password is: ", password_to_check, end='\n')
 
         cursor = conn.cursor()
         # execute query
@@ -119,14 +136,14 @@ def login():
             password_correct = data['password']
             # Compare the passwords
             if verify(password_to_check, password_correct):
-                print("They match!!\n")
                 # Valid User
                 session['logged_in'] = True
                 session['username'] = username
-
+                cursor.close()
                 flash("You Have Successfuly Logged in", "success")
                 return redirect(url_for("dashboard"))
             else:  # passwords do not match
+
                 flash('Login Unsuccessful. Please check username and password', 'danger')
                 # we don't want to flash the password being incorrect, but just highliight it and display it as an error underneath the password field
 
@@ -137,6 +154,54 @@ def login():
             cursor.close()
 
     return render_template('login.html', title='Login', form=form)
+
+
+@app.route("/changePassword", methods=['GET', 'POST'])
+def changePassword():
+    form = changePassForm()
+    # should be logged in already
+    # user enters current password
+    if 'logged_in' in session:
+        if form.validate_on_submit():
+            # get information from form
+            currentPass = form.currentPass.data
+            newPass = form.newPassword.data
+            # create cursor
+            cursor = conn.cursor()
+            # verify current password
+            username = session['username']
+            query = 'SELECT * FROM Person WHERE username = %s'
+            cursor.execute(query, (username))
+            # query must return something since the user is already logged in
+            data = cursor.fetchone()
+            password_correct = data['password']
+            if verify(currentPass, password_correct):
+                # passwords match, update current password
+                newPassHashed = encrypt(newPass)
+                query = 'UPDATE Person SET password=%s WHERE username=%s'
+                cursor.execute(query, (newPassHashed, username))
+                conn.commit()
+                cursor.close()
+                session.clear()  # must login again
+                flash('Your Password Has Been Updated', 'success')
+                return redirect(url_for('login'))
+            else:
+                cursor.close()
+                flash('Incorrect Password, Could Not Change Password', 'danger')
+                return redirect(url_for('login'))
+        return render_template('changePassword', title='Change Password', form=form)
+# @app.route("/changeUsername", methods=["GET, POST"])
+# def changeUsername():
+#     if 'logged_in' in session:
+#         form =
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("You have logged out", "success")
+    return redirect(url_for('home'))
+
 
 
 #==================================================================================
