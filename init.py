@@ -78,13 +78,16 @@ def dashboard():
     current_user = User(data["fname"], data["lname"], username,
                         data["password"], data["bio"], data["avatar"], data["isPrivate"])
 
-    return render_template('dashboard.html', title='Dashboard', current_user=current_user)
+    return render_template('dashboard.html', title='Dashboard', current_user=current_user, isLoggedin=True)
 
 
 @app.route("/about")
 def about():
+    isLoggedin = False
+    if 'logged_in' in session:
+        isLoggedin = True
     # Will contain project information
-    return render_template('about.html', title='About')
+    return render_template('about.html', title='About', isLoggedin=isLoggedin)
 
 
 @app.route("/register", methods=['GET', 'POST'])
@@ -189,7 +192,7 @@ def changePassword():
                 cursor.close()
                 flash('Incorrect Password, Could Not Change Password', 'danger')
                 return redirect(url_for('login'))
-        return render_template('changePassword', title='Change Password', form=form)
+        return render_template('changePassword', title='Change Password', form=form, isLoggedin=True)
 # @app.route("/changeUsername", methods=["GET, POST"])
 # def changeUsername():
 #     if 'logged_in' in session:
