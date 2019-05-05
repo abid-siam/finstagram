@@ -1,0 +1,14 @@
+<!-- ++++++++++++++++++++++++++++++++++++++++
+                  GROUPS PAGE
+     ++++++++++++++++++++++++++++++++++++++++ -->
+
+{% extends "layout.html" %} <!-- this is like an #include statement which brings copies the code from the specified file  -->
+{% block content %}
+<div class ="content-section" id="group-pg">
+  <h1 style="margin-left: auto; margin-right: auto">Group Options</h1>
+  <div style="margin-top: 20px">
+    <a class="btn btn-primary" href="/groups/create" role="button">Create Group</a> <br> <br>
+    <a class="btn btn-primary" href="/groups/manage" role="button">Manage Groups</a>
+  </div>
+</div>
+{% endblock content %}

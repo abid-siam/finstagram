@@ -4,11 +4,11 @@
 
 {% extends "layout.html" %} <!-- this is like an #include statement which brings copies the code from the specified file  -->
 {% block content %}
-    <div class ="content-section">
+    <div class ="content-section" id = "registerform">
         <form method="POST" action="">
             {{ form.hidden_tag() }}
             <fieldset class="form-group">
-                <legend class="border bottom mb-4">Create An Account</legend>
+                <legend style="text-align: center;" class="border bottom mb-4"> Create An Account</legend>
                 <div class="form-group">
                     {{ form.first_name.label(class="form-control-label")}}
                     {% if form.first_name.errors %}
@@ -81,13 +81,11 @@
                 {{ form.submit(class="btn btn-outline-info") }}
             </div>
         </form>
-    </div>
-    <div class="border-top pt-3">
         <small class="text-muted">
             Already Have An Account? <a class="ml-2" href="{{url_for('login')}}">Sign In</a>
-
         </small>
     </div>
+
 {% endblock content %}
 
 

@@ -4,11 +4,11 @@
 
 {% extends "layout.html" %} <!-- this is like an #include statement which brings copies the code from the specified file  -->
 {% block content %}
-    <div class ="content-section">
+    <div class ="content-section" id="loginform">
         <form method="POST" action="/login"> <!-- Make a request to the same page  -->
             {{ form.hidden_tag() }}
             <fieldset class="form-group">
-                <legend class="border bottom mb-4">Log In</legend>
+                <legend style="text-align: center;" class="border bottom mb-4">Log In</legend>
                 <div class="form-group">
                     {{ form.username.label(class="form-control-label")}}
                     {% if form.username.errors %}
@@ -35,25 +35,14 @@
                         {{ form.password(class="form-control form-control-lg")}} <!-- input field is valid -->
                     {% endif %}
                 </div>
-                <div class="form-check">
-                    {{ form.remember(class="form-check-input")}}
-                    {{ form.remember.label(class="form-check-label")}}
-                </div>
 
             </fieldset>
             <div class="form-group">
                 {{ form.submit(class="btn btn-outline-info") }}
             </div>
-            <small class="text-muted ml-2">
-                <a href="#">Forgot Password?</a>
+            <small class="text-muted">Don't Have An Account?<a class="ml-2" href="{{url_for('register')}}">Register Here</a>
             </small>
         </form>
-    </div>
-    <div class="border-top pt-3">
-        <small class="text-muted">
-            Don't Have An Account?<a class="ml-2" href="{{url_for('register')}}">Register Here</a>
-
-        </small>
     </div>
 {% endblock content %}
 

@@ -1,0 +1,67 @@
+<!-- ++++++++++++++++++++++++++++++++++++++++
+                  POST PAGE
+     ++++++++++++++++++++++++++++++++++++++++ -->
+
+{% extends "layout.html" %} <!-- this is like an #include statement which brings copies the code from the specified file  -->
+{% block content %}
+<div class ="content-section">
+    <form method="POST" action="" enctype="multipart/form-data"> <!-- Make a request to the same page  -->
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend style="text-align: center;" class="border bottom mb-4">Post An Image</legend>
+            <div class="form-group">
+                {{ form.image.label() }}
+                {{ form.image(class="form-control-file") }}
+                {% if form.image.errors %}
+                    {% for error in form.image.errors %}
+                        <span class="text-danger">{{ error }}</span></br>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.caption.label(class="form-control-label")}}
+                {% if form.caption.errors %}
+                    {{ form.caption(class="form-control form-control-lg is-invalid")}}
+                    <div class="invalid-feedback">
+                        {% for error in form.caption.errors %}
+                            <span> {{ error }} </span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.caption(class="form-control form-control-lg")}} <!-- input field is valid -->
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.allFollowers.label(class="form-control-label")}}
+                {% if form.allFollowers.errors %}
+                    {{ form.allFollowers(class="form-control form-control-lg is-invalid")}}
+                    <div class="invalid-feedback">
+                        {% for error in form.allFollowers.errors %}
+                            <span> {{ error }} </span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.allFollowers}} <!-- input field is valid -->
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.groups.label(class="form-control-label")}}
+                {% if form.groups.errors %}
+                    {{ form.groups(class="form-control form-control-lg is-invalid")}}
+                    <div class="invalid-feedback">
+                        {% for error in form.groups.errors %}
+                            <span> {{ error }} </span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.groups(class="form-control form-control-lg")}} <!-- input field is valid -->
+                {% endif %}
+            </div>
+        </fieldset>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-outline-info") }}
+        </div>
+    </form>
+</div>
+
+{% endblock content %}

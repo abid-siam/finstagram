@@ -1,0 +1,47 @@
+<!-- ++++++++++++++++++++++++++++++++++++++++
+                  MANAGE GROUPS PAGE
+     ++++++++++++++++++++++++++++++++++++++++ -->
+
+
+{% extends "layout.html" %} <!-- this is like an #include statement which brings copies the code from the specified file  -->
+{% block content %}
+<div class ="content-section">
+    <form method="POST" action=""> <!-- Make a request to the same page  -->
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend style="text-align: center;" class="border bottom mb-4">Manage Your Groups</legend>
+            <div class="form-group">
+                {{ form.group.label(class="form-control-label")}}
+                {% if form.group.errors %}
+                    {{ form.group(class="form-control form-control-lg is-invalid")}}
+                    <div class="invalid-feedback">
+                        {% for error in form.group.errors %}
+                            <span> {{ error }} </span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.group(class="form-control form-control-lg")}} <!-- input field is valid -->
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.newUser.label(class="form-control-label")}}
+                {% if form.newUser.errors %}
+                    {{ form.newUser(class="form-control form-control-lg is-invalid")}}
+                    <div class="invalid-feedback">
+                        {% for error in form.newUser.errors %}
+                            <span> {{ error }} </span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.newUser(class="form-control form-control-lg")}} <!-- input field is valid -->
+                {% endif %}
+            </div>
+        </fieldset>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-outline-info") }}
+        </div>
+        <a class="btn btn-secondary btn-small" href="/groups/create" role="button">Create Group</a>
+    </form>
+</div>
+{% endblock content %}
+

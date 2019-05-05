@@ -1,0 +1,13 @@
+<!-- ++++++++++++++++++++++++++++++++++++++++
+                  SETTINGS PAGE
+     ++++++++++++++++++++++++++++++++++++++++ -->
+
+{% extends "layout.html" %} <!-- this is like an #include statement which brings copies the code from the specified file  -->
+{% block content %}
+<div class ="content-section">
+    <a href="/update" class="btn btn-info" role="button">Update Your Profile</a>
+    <a href="/changePassword" class="btn btn-info" role="button">Change Your Password</a>
+    <!-- <a href="#link" class="btn btn-info" role="button">Remove Your Account</a> -->
+</div>
+
+{% endblock content %}
