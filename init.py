@@ -2,7 +2,8 @@
 Abid Siam
 CS-UY 410X
 Professor Frankl
-Updated: April 25, 2019
+github.com/abid-siam/finstagram-project
+Updated: May 6, 2019
 New features:
 default avatar image in progile_pictures folder
 update user data option in /user (username, bio, avatar, and password - special directory)
@@ -11,25 +12,17 @@ Home (reroutes to dashboard if logged in)
 --> About, Login, Register
 if logged in: (reroutes to home otherwise)
     Dashboard (View all photos of following and personal photos)
-    --> Settings
     --> About
+    --> Edit Account
     --> Logout
     --> Follow
-    --> FollowRequests
+    --> ManageRequests
+        - FollowRequests
+        - TagRequests
     --> MyGroups
     Logout
     --> Redirects to Home
     User (View all personal photos and group information)
-
-    --> Dashboard
-    --> Logout
-    --> Settings
-    --> MyGroups
-    Settings
-    --> Change Password (for now)
-    -->
-
-github.com/abid-siam/finstagram-project
 '''
 import os
 import time
@@ -40,8 +33,8 @@ from PIL import Image
 from flask import render_template, request, session, url_for, flash, redirect
 import hashlib
 from forms import RegistrationForm, LoginForm, ChangePassForm, \
-    FollowRequestForm, ManageRequestForm, UpdateUserForm, CreateGroupForm, \
-    ManageGroupForm, CreatePostForm
+    FollowRequestForm, ManageFollowRequestForm, UpdateUserForm, CreateGroupForm, \
+    ManageGroupForm, CreatePostForm, TagUserForm, ManageTagRequestForm
 from connection import *
 
 app = Flask(__name__)
@@ -77,7 +70,20 @@ def getUser():
     return current_user
 
 
-def getRequests():
+def getTagRequests():
+    requests = []
+    username = session['username']
+    cursor = conn.cursor()
+    query = 'SELECT photoID FROM Tag WHERE username = %s AND acceptedTag = 0'
+    cursor.execute(query, (username))
+    data = cursor.fetchall()
+    for i in range(len(data)):
+        requests.append((i, data[i].get('photoID')))
+    cursor.close()
+    return requests
+
+
+def getFollowRequests():
     requests = []
     username = session['username']
     cursor = conn.cursor()
@@ -164,24 +170,37 @@ def home():
 # only accessible if logged in
 
 
-@app.route('/dashboard')
+@app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
-    current_user = getUser()
-    username = current_user.username
-    # fetch photos
-    '''
-    User can view photos if:
-    1. User is the owner of the photo
-    2. The photo is allFollowers and User is a follower of the owner
-    3. The photo is not allFollowers and the User is in a closefriendgroup that the photo has been shared with
-    '''
-    cursor = conn.cursor()
-    query = 'SELECT photoID,photoOwner, caption, timestamp, filePath FROM Photo AS p1 WHERE photoOwner = %s OR photoID IN (SELECT photoID FROM Photo NATURAL JOIN Follow WHERE followerUsername= %s AND p1.allFollowers = 1) OR photoID IN (SELECT photoID FROM share NATURAL JOIN belong NATURAL JOIN photo WHERE username =  %s AND photoOwner !=  %s) ORDER BY timestamp DESC'
-    cursor.execute(query, (username, username, username, username,))
-    data = cursor.fetchall()
-    cursor.close()
-    # clean up data
-    return render_template('dashboard.html', title='Dashboard', current_user=current_user, isLoggedin=True, posts=data)
+    if 'logged_in' in session:
+        current_user = getUser()
+        username = current_user.username
+        # fetch photos
+        '''
+        User can view photos if:
+        1. User is the owner of the photo
+        2. The photo is allFollowers and User is a follower of the owner
+        3. The photo is not allFollowers and the User is in a closefriendgroup that the photo has been shared with
+        '''
+        cursor = conn.cursor()
+        query = 'SELECT photoID,photoOwner, caption, timestamp, filePath FROM Photo AS p1 WHERE photoOwner = %s OR photoID IN (SELECT photoID FROM Photo NATURAL JOIN Follow WHERE followerUsername= %s AND p1.allFollowers = 1) OR photoID IN (SELECT photoID FROM share NATURAL JOIN belong NATURAL JOIN photo WHERE username =  %s AND photoOwner !=  %s) ORDER BY timestamp DESC'
+        cursor.execute(query, (username, username, username, username,))
+        data = cursor.fetchall()
+
+        # modify data to include the first and last names of the tagees
+        for post in data:  # post is a dictionary
+            query = 'SELECT fname, lname FROM Tag NATURAL JOIN Person NATURAL JOIN Photo WHERE acceptedTag = 1 AND photoID = %s'
+            cursor.execute(query, (post['photoID']))
+            result = cursor.fetchall()
+            if (result):
+                post['tagees'] = result
+                print(post)
+
+        cursor.close()
+        # clean up data
+        return render_template('dashboard.html', title='Dashboard', current_user=current_user, isLoggedin=True, posts=data)
+    else:
+        return redirect(url_for('home'))
 
 
 @app.route("/about")
@@ -352,12 +371,12 @@ def follow():
         return render_template('follow.html', title='Follow', form=form, isLoggedin=True)
 
 
-@app.route("/requests", methods=['GET', 'POST'])
-def requests():
-    form = ManageRequestForm()
+@app.route("/followRequests", methods=['GET', 'POST'])
+def followRequests():
+    form = ManageFollowRequestForm()
     if 'logged_in' in session:
         current_user = getUser()
-        requests = getRequests()
+        requests = getFollowRequests()
         if request.method == 'GET':
             form.select.choices = requests
 
@@ -375,13 +394,13 @@ def requests():
             cursor.close()
             if len(result) > 1:
                 flash('You have new followers! Requests have been updated!', 'success')
-                return redirect(url_for('requests'))
+                return redirect(url_for('followRequests'))
             else:
                 flash('You have a new follower! Requests have been updated!', 'success')
-                return redirect(url_for('requests'))
+                return redirect(url_for('followRequests'))
         # if form.validate_on_submit():
 
-        return render_template('requests.html', title='Requests', form=form, isLoggedin=True, current_user=current_user)
+        return render_template('followRequests.html', title='Follow Requests', form=form, isLoggedin=True, current_user=current_user)
     else:
         return redirect(url_for('home'))
 
@@ -580,6 +599,65 @@ def post():
         return render_template('post.html', title='Post', form=form, isLoggedin=True)
     else:
         return redirect(url_for('home'))
+
+
+@app.route("/tag", methods=['GET', 'POST'])
+def tag():
+    form = TagUserForm()
+    var = request.args.get('id', None)
+    if 'logged_in' in session:
+        if request.method == 'GET':
+            form.photoID.data = var
+
+        if form.validate_on_submit():
+            userTag = form.userTag.data
+            photoID = form.photoID.data
+            # create a tag request
+            cursor = conn.cursor()
+            ins = 'INSERT INTO Tag(username, photoID, acceptedTag) VALUES(%s,%s,0)'
+            cursor.execute(ins, (userTag, photoID))
+            conn.commit()
+            cursor.close()
+            flash(f'A Tag request was sent to {userTag} for photo ID: {photoID}', 'success')
+            return redirect(url_for('dashboard'))
+        return render_template('tag.html', title='Tag', isLoggedin=True, form=form)
+
+    else:
+        return redirect(url_for('home'))
+
+
+@app.route("/tagRequests", methods=['GET', 'POST'])
+def tagRequests():
+    form = ManageTagRequestForm()
+    if 'logged_in' in session:
+        current_user = getUser()
+        requests = getTagRequests()
+        if request.method == 'GET':
+            form.select.choices = requests
+
+        elif request.method == 'POST':
+            # form.select.data returns a list of strings corresponding to the position of a username in requests
+            # iterate through the data and update the acceptedTag
+            result = form.select.data
+            cursor = conn.cursor()
+            for i in range(len(form.select.data)):
+                accepted = requests[int(result[i])][1]  # get the photoID
+                update = 'UPDATE Tag SET acceptedTag = 1 WHERE photoID=%s AND username=%s'
+                cursor.execute(update, (accepted, session['username']))
+                conn.commit()
+            cursor.close()
+            if len(result) > 1:
+                flash('You have been tagged in new photos! Requests have been updated!', 'success')
+                return redirect(url_for('followRequests'))
+            else:
+                flash('You have been tagged in a new photo! Requests have been updated!', 'success')
+                return redirect(url_for('tagRequests'))
+        # if form.validate_on_submit():
+
+        return render_template('tagRequests.html', title='Tag Requests', form=form, isLoggedin=True, current_user=current_user)
+    else:
+        return redirect(url_for('home'))
+
 # #==================================================================================
 
 

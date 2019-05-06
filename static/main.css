@@ -34,24 +34,6 @@ p{
 .site-header .navbar-nav .nav-link.active {
   font-weight: 100;
 }
-.vertical-menu {
-  margin-top: 50px;
-  width: 150px;
-  height: 250px;
-}
-
-.vertical-menu a {
-  background-color: #5f788a;
-  color: #D3D3D3;
-  display: block;
-  padding: 12px;
-  text-decoration: none;
-}
-
-
-.vertical-menu a:hover {
-  color: white;
-}
 
 .content-section#about-page{
   max-width: 800px;
@@ -76,13 +58,12 @@ p{
 }
 .content-section#groups-pg{
   background: #ffffff;
-  padding: 0px 0px;
+  padding: 10px 20px;
   margin-bottom: 20px;
   margin: 60px auto;
-  max-width: 500px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  max-width: 400px;
+  text-align: center;
+
 }
 
 .content-section#main-user-info{
@@ -195,3 +176,51 @@ p{
 }
 
 /*@media screen and (max-width: )*/
+
+/* Fixed sidenav, full height */
+.vertical-menu {
+  margin-top: 50px;
+  width: 150px;
+  height: 250px;
+}
+
+/* Style the sidenav links and the dropdown button */
+.vertical-menu a, .dropdown-btn {
+  color: #D3D3D3;
+  display: block;
+  padding: 12px;
+  text-decoration: none;
+  background-color: #5f788a;
+  width:100%;
+  cursor: pointer;
+  outline: none;
+  border: none;
+}
+
+/* On mouse-over */
+.vertical-menu a:hover, .dropdown-btn:hover {
+  color: white;
+}
+
+
+/* Add an active class to the active dropdown button */
+.active {
+  background-color: ;
+  color: white;
+}
+
+/* Dropdown container (hidden by default). Optional: add a lighter background color and some left padding to change the design of the dropdown content */
+.dropdown-container {
+  display: none;
+  background-color: #5f788a;
+/*  padding-left: 8px;*/
+}
+
+/* Optional: Style the caret down icon */
+.fa-caret-down {
+  float: right;
+  color: white;
+  padding-right: 8px;
+}
+
+/*=====================================*/

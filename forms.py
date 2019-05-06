@@ -2,7 +2,7 @@ from flask import session
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, FileField,\
-    TextAreaField, SelectMultipleField, SelectField, RadioField
+    TextAreaField, SelectMultipleField, IntegerField, SelectField, RadioField
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, Optional
 import pymysql.cursors
 from connection import *
@@ -84,7 +84,7 @@ class FollowRequestForm(FlaskForm):
                 raise ValidationError(f'You already follow {userFollow.data}!')
 
 
-class ManageRequestForm(FlaskForm):
+class ManageFollowRequestForm(FlaskForm):
     select = SelectMultipleField('Select Follow Request', validators=[DataRequired()])
     submit = SubmitField('Accept')
 
@@ -135,3 +135,45 @@ class CreatePostForm(FlaskForm):
             raise ValidationError("You must select at least one group")
 
 
+class TagUserForm(FlaskForm):
+    userTag = StringField('Username', validators=[DataRequired()])
+    photoID = IntegerField('Photo ID', validators=[DataRequired()])
+    submit = SubmitField('Submit Tag Request')
+
+    def validate_userTag(self, userTag):
+        # can't tag if the username doesn't exist
+        cursor = conn.cursor()
+        query = 'SELECT * FROM Person WHERE username = %s'
+        cursor.execute(query, (userTag.data))
+        data = cursor.fetchone()
+        if (not data):
+            raise ValidationError('The username entered does not exist. Please choose a different one.')
+        query = 'SELECT * FROM Tag WHERE username = %s AND photoID = %s'
+        cursor.execute(query, (userTag.data, self.photoID.data))
+        data = cursor.fetchone()
+        if (data):
+            if data['acceptedTag'] == 1:
+                raise ValidationError(f'{userTag.data} has already accepted a previous tag request')
+            elif data['acceptedTag'] == 0:
+                raise ValidationError(f'A Tag request has already been sent to {userTag.data}')
+
+        # can't tag if username is not visible
+        query = 'SELECT * FROM Photo AS p1 WHERE photoID = %s AND (photoOwner = %s OR photoID IN (SELECT photoID FROM Photo NATURAL JOIN Follow WHERE followerUsername= %s AND p1.allFollowers = 1) OR photoID IN (SELECT photoID FROM share NATURAL JOIN belong NATURAL JOIN photo WHERE username =  %s AND photoOwner !=  %s))'
+        cursor.execute(query, (self.photoID.data, userTag.data, userTag.data, userTag.data, userTag.data,))
+        data = cursor.fetchone()
+        cursor.close()
+        if not data:
+            raise ValidationError('The username entered does not have access to this post')
+
+    def validate_photoID(self, photoID):
+        cursor = conn.cursor()
+        query = 'SELECT photoID FROM Photo WHERE photoID = %s'
+        cursor.execute(query, (photoID.data))
+        data = cursor.fetchone()
+        if (not data):
+            raise ValidationError('The photo ID entered does not exist. Please choose a different one.')
+
+
+class ManageTagRequestForm(FlaskForm):
+    select = SelectMultipleField('Select Tag Request', validators=[DataRequired()])
+    submit = SubmitField('Accept')

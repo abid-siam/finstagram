@@ -1,0 +1,31 @@
+<!-- ++++++++++++++++++++++++++++++++++++++++
+              MANAGE FOLLOW REQUESTS PAGE
+     ++++++++++++++++++++++++++++++++++++++++ -->
+
+{% extends "layout.html" %} <!-- this is like an #include statement which brings copies the code from the specified file  -->
+{% block content %}
+<div class ="content-section">
+        <form method="POST" action=""> <!-- Make a request to the same page  -->
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <legend class="border bottom mb-4">Follow Requests</legend>
+                <div class="form-group">
+                    {{ form.select.label(class="form-control-label")}}
+                    {% if form.select.errors %}
+                        {{ form.select(class="form-control form-control-lg is-invalid")}}
+                        <div class="invalid-feedback">
+                            {% for error in form.select.errors %}
+                                <span> {{ error }} </span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.select(class="form-control form-control-lg")}} <!-- input field is valid -->
+                    {% endif %}
+                </div>
+            </fieldset>
+            <div class="form-group">
+                {{ form.submit(class="btn btn-outline-info") }}
+            </div>
+        </form>
+</div>
+{% endblock content %}
