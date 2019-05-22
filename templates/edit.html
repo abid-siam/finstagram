@@ -1,5 +1,5 @@
 <!-- ++++++++++++++++++++++++++++++++++++++++
-                 Edit PAGE
+                    Edit PAGE
      ++++++++++++++++++++++++++++++++++++++++ -->
 
 {% extends "layout.html" %} <!-- this is like an #include statement which brings copies the code from the specified file  -->
@@ -79,7 +79,21 @@
                         {% endfor %}
                     {% endif %}
                 </div>
+                <div class="form-group">
+                    {{ form.isPrivate.label(class="form-control-label")}}
+                    {% if form.isPrivate.errors %}
+                        {{ form.isPrivate(class="form-control form-control-lg is-invalid")}}
+                        <div class="invalid-feedback">
+                            {% for error in form.isPrivate.errors %}
+                                <span> {{ error }} </span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.isPrivate}} <!-- input field is valid -->
+                    {% endif %}
+                </div>
             </fieldset>
+
             <div class="form-group">
                 {{ form.submit(class="btn btn-outline-info") }}
             </div>

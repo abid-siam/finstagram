@@ -3,10 +3,8 @@ Abid Siam
 CS-UY 410X
 Professor Frankl
 github.com/abid-siam/finstagram-project
-Updated: May 6, 2019
-New features:
-default avatar image in progile_pictures folder
-update user data option in /user (username, bio, avatar, and password - special directory)
+Updated: May 20, 2019
+
 Directory tree:
 Home (reroutes to dashboard if logged in)
 --> About, Login, Register
@@ -183,7 +181,8 @@ def dashboard():
         3. The photo is not allFollowers and the User is in a closefriendgroup that the photo has been shared with
         '''
         cursor = conn.cursor()
-        query = 'SELECT photoID,photoOwner, caption, timestamp, filePath FROM Photo AS p1 WHERE photoOwner = %s OR photoID IN (SELECT photoID FROM Photo NATURAL JOIN Follow WHERE followerUsername= %s AND p1.allFollowers = 1) OR photoID IN (SELECT photoID FROM share NATURAL JOIN belong NATURAL JOIN photo WHERE username =  %s AND photoOwner !=  %s) ORDER BY timestamp DESC'
+        query = 'SELECT photoID,photoOwner, caption, timestamp, filePath FROM Photo AS p1 WHERE photoOwner = %s OR p1.photoID IN (SELECT photoID FROM Photo NATURAL JOIN Follow WHERE followerUsername= %s AND p1.allFollowers = 1 AND p1.photoOwner = followeeUsername) OR p1.photoID IN (SELECT photoID FROM share NATURAL JOIN belong NATURAL JOIN photo WHERE username = %s AND photoOwner != %s) ORDER BY timestamp DESC'
+
         cursor.execute(query, (username, username, username, username,))
         data = cursor.fetchall()
 
@@ -194,7 +193,7 @@ def dashboard():
             result = cursor.fetchall()
             if (result):
                 post['tagees'] = result
-                print(post)
+                # print(post)
 
         cursor.close()
         # clean up data
@@ -523,19 +522,23 @@ def update():
     current_user = getUser()
     if 'logged_in' in session:
         if form.validate_on_submit():
-            picture_file = 'default.jpg'
-            if form.avatar.data:
-                print(form.avatar.data)
-                picture_file = save_picture(form.avatar.data)
-
+            # won't update the avatar if no data is given
             currentUsername = session['username']
             firstName = form.first_name.data
             lastName = form.last_name.data
             username = form.username.data
             bio = form.bio.data
+            isPrivate = form.isPrivate.data
+            setPriv = 1 if isPrivate == 'T' else 0
             cursor = conn.cursor()
-            update = 'UPDATE Person SET fName=%s, lName=%s, username=%s, bio=%s, avatar=%s WHERE username=%s'
-            cursor.execute(update, (firstName, lastName, username, bio, picture_file, currentUsername))
+            if form.avatar.data:
+                picture_file = save_picture(form.avatar.data)
+                update = 'UPDATE Person SET fName=%s, lName=%s, username=%s, bio=%s, avatar=%s,isPrivate=%s WHERE username=%s'
+                cursor.execute(update, (firstName, lastName, username, bio, picture_file, setPriv,currentUsername))
+            else:
+                update = 'UPDATE Person SET fName=%s, lName=%s, username=%s, bio=%s,isPrivate=%s WHERE username=%s'
+                cursor.execute(update, (firstName, lastName, username, bio, setPriv, currentUsername))
+            # update the session username
             session['username'] = username
             # save changes to database
             conn.commit()
@@ -543,11 +546,12 @@ def update():
             # notify the user of successful creation of account
             flash('Your account has been updated!', 'success')  # the second argument taken by the flash function indicates the type of result our message is
             return redirect(url_for('update'))
-        elif request.method == 'GET':
+        if request.method == 'GET':  # fill in form with information given
             form.first_name.data = current_user.firstName
             form.last_name.data = current_user.lastName
             form.username.data = current_user.username
             form.bio.data = current_user.bio
+            form.isPrivate.data = 'T' if current_user.isPrivate else 'F'
 
         return render_template('edit.html', title='Edit Account', form=form, current_user=current_user, isLoggedin=True)
     else:
@@ -563,7 +567,7 @@ def post():
         groupNames = getGroups(username)
         form.groups.choices = groupNames
         if form.validate_on_submit():
-            print(form.image.data)
+            # print(form.image.data)
             picture_file = save_picture2(form.image.data)
             caption = form.caption.data
             allFollowers = form.allFollowers.data

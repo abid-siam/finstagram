@@ -4,58 +4,49 @@
 
 {% extends "layout.html" %} <!-- this is like an #include statement which brings copies the code from the specified file  -->
 {% block content %}
-
-    {% for post in posts %}
-      <div class="content-section" id="image-content">
-            <div class="article-metadata" style="margin-left:20px;margin-right:20px;margin-bottom: 10px">
-              <p><b>{{post.photoOwner}}</b></p> <br>
-              <small class=text-muted> Photo ID: {{post.photoID}}</small>
-              <small class="text-muted" style="float: right;">Posted on {{ post.timestamp }}</small> <br>
-            </div>
-            <img src="static/posts/{{post.filePath}}" style= "width:100%">
-            <br>
-            <div class="image-description" style="margin-left:20px;margin-top:10px">
-              <p>{{post.caption}}</p>
-              <a href="{{ url_for('tag', id=post.photoID) }}" style="float:right; margin-right: 20px" class="btn btn-secondary btn-sm active" role="button" aria-pressed="true">Tag User</a>
+    {% if posts %}
+      {% for post in posts %}
+        <div class="content-section" id="image-content">
+              <div class="article-metadata" style="margin-left:20px;margin-right:20px;margin-bottom: 10px">
+                <p><b>{{post.photoOwner}}</b></p> <br>
+                <small class=text-muted> Photo ID: {{post.photoID}}</small>
+                <small class="text-muted" style="float: right;">Posted on {{ post.timestamp }}</small> <br>
+              </div>
+              <img src="static/posts/{{post.filePath}}" style= "width:100%">
               <br>
-              <p>Tagged users:
-              {% if post.tagees %}
-                {% for tagged in post.tagees %}
-                  {% if loop.last %}
-                  <p>{{tagged.fname}} {{tagged.lname}}</p>
-                  {% else %}
-                  <p>{{tagged.fname}} {{tagged.lname}},</p>
-                  {% endif %}
-                {% endfor %}
-              {% else %}
-               <p> None</p>
-              {% endif %}
-              </p>
+              <div class="image-description" style="margin-left:20px;margin-top:10px">
+                <p>{{post.caption}}</p>
+                <a href="{{ url_for('tag', id=post.photoID) }}" style="float:right; margin-right: 20px" class="btn btn-secondary btn-sm active" role="button" aria-pressed="true">Tag User</a>
+                <br>
+                <p>Tagged users:
+                {% if post.tagees %}
+                  {% for tagged in post.tagees %}
+                    {% if loop.last %}
+                    <p>{{tagged.fname}} {{tagged.lname}}</p>
+                    {% else %}
+                    <p>{{tagged.fname}} {{tagged.lname}},</p>
+                    {% endif %}
+                  {% endfor %}
+                {% else %}
+                 <p> None</p>
+                {% endif %}
+                </p>
+              </div>
             </div>
+        {% endfor %}
+      {% else %}
+        <div class="content-section" id="post-holder">
+          <p>Posts that are visible to you will be here</p>
+        </div>
 
-
-      </div>
-    {% endfor %}
+      {% endif %}
 
         <div class="user-info-small">
             <img src="{{current_user.avatar}}" alt="User avatar" class="rounded-circle" style="width: 50px; height: 50px;">
               <p>
                 <b><a href="/account" style="text-decoration: none; color: black;">{{current_user.username}}</a></b>
               </p>
-<!--             <div class="vertical-menu">
-              <a href="/post">Post</a>
-              <a href="/follow">Search for User</a>
-              <div class="dropdown">
-                  <a class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Manage Requests
-                  </a>
-                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <a class="dropdown-item" href="/followRequests">Follow Requests</a>
-                    <a class="dropdown-item" href="/tagRequests">Tag Requests</a>
-                  </div>
-              </div>
-              <a href="/groups">My Groups</a>
-            </div> -->
+
             <div class="vertical-menu">
                 <a href="/post">Post</a>
                 <a href="/follow">Search for User</a>
