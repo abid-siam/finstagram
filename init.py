@@ -181,9 +181,9 @@ def dashboard():
         3. The photo is not allFollowers and the User is in a closefriendgroup that the photo has been shared with
         '''
         cursor = conn.cursor()
-        query = 'SELECT photoID,photoOwner, caption, timestamp, filePath FROM Photo AS p1 WHERE photoOwner = %s OR p1.photoID IN (SELECT photoID FROM Photo NATURAL JOIN Follow WHERE followerUsername= %s AND p1.allFollowers = 1 AND p1.photoOwner = followeeUsername) OR p1.photoID IN (SELECT photoID FROM share NATURAL JOIN belong NATURAL JOIN photo WHERE username = %s AND photoOwner != %s) ORDER BY timestamp DESC'
+        query = 'SELECT photoID,photoOwner, caption, timestamp, filePath FROM Photo AS p1 WHERE photoOwner = %s OR photoID IN (SELECT photoID FROM Photo WHERE photoOwner != %s AND allFollowers = 1 AND photoOwner IN (SELECT followeeUsername FROM follow WHERE followerUsername = %s AND followeeUsername = photoOwner AND acceptedFollow = 1)) OR photoID IN (SELECT photoID FROM share NATURAL JOIN belong NATURAL JOIN photo WHERE username = %s AND photoOwner != %s) ORDER BY timestamp DESC'
 
-        cursor.execute(query, (username, username, username, username,))
+        cursor.execute(query, (username, username, username, username, username))
         data = cursor.fetchall()
 
         # modify data to include the first and last names of the tagees
@@ -534,7 +534,7 @@ def update():
             if form.avatar.data:
                 picture_file = save_picture(form.avatar.data)
                 update = 'UPDATE Person SET fName=%s, lName=%s, username=%s, bio=%s, avatar=%s,isPrivate=%s WHERE username=%s'
-                cursor.execute(update, (firstName, lastName, username, bio, picture_file, setPriv,currentUsername))
+                cursor.execute(update, (firstName, lastName, username, bio, picture_file, setPriv, currentUsername))
             else:
                 update = 'UPDATE Person SET fName=%s, lName=%s, username=%s, bio=%s,isPrivate=%s WHERE username=%s'
                 cursor.execute(update, (firstName, lastName, username, bio, setPriv, currentUsername))

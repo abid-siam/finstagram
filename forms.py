@@ -111,7 +111,7 @@ class ManageGroupForm(FlaskForm):
         cursor = conn.cursor()
         # check to see if the username entered is in current users followers
         query = 'SELECT * FROM Follow WHERE followerUsername =%s AND followeeUsername =%s AND acceptedFollow =1'
-        cursor.execute(query, (session['username'], self.newUser.data))
+        cursor.execute(query, (self.newUser.data, session['username']))
         data = cursor.fetchone()
         if not data:
             raise ValidationError(f'{self.newUser.data} is not in your Followers.')
