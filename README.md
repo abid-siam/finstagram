@@ -27,7 +27,7 @@ I am running MySQL server using WAMPserver64. Once installed, add a new database
 #### Login Page
 ![](samples/login.jpg)
 #### Home Page
-![](sample/home.jpg)
+![](samples/home.jpg)
 #### Updated with Post and Profile Picture
 ![](samples/samplepost.jpg)
 
